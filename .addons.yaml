@@ -1,0 +1,7 @@
+---
+channel: edge
+addons:
+  ntopng:
+    repository: litinoveweedle/hassio-addon-ntopng
+    target: ntopng
+    image: ghcr.io/litinoveweedle/{arch}-ntopng
