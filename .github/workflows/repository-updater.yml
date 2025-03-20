@@ -8,6 +8,8 @@ on:
 
 jobs:
   workflows:
-    uses: litinoveweedle/hassio-addons-workflows/.github/workflows/repository-updater.yaml@main
+    uses: >
+      litinoveweedle/hassio-addons-workflows/
+      .github/workflows/repository-updater.yaml@main
     secrets:
       UPDATER_TOKEN: ${{ secrets.UPDATER_TOKEN }}
