@@ -9,4 +9,3 @@ addons:
     repository: litinoveweedle/hassio-addon-taptap
     target: taptap
     image: ghcr.io/litinoveweedle/{arch}-taptap
-
