@@ -11,4 +11,4 @@ jobs:
     # yamllint disable-line rule:line-length
     uses: litinoveweedle/hassio-addons-workflows/.github/workflows/repository-updater.yaml@main
     secrets:
-      UPDATER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      UPDATER_TOKEN: ${{ secrets.UPDATER_TOKEN }}
