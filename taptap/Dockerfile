@@ -1,5 +1,7 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-dockerfile
 ARG BUILD_FROM
+FROM ${BUILD_FROM}
+
 ARG BUILD_ARCH
 ARG BUILD_DATE
 ARG BUILD_DESCRIPTION
@@ -10,8 +12,6 @@ ARG BUILD_VERSION
 
 ARG TAPTAP_VERSION
 ARG TAPTAP_MQTT_VERSION
-
-FROM ${BUILD_FROM}
 
 WORKDIR /tmp
 
