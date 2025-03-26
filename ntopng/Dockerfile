@@ -8,7 +8,7 @@ FROM ${BUILD_FROM} AS stage1
 
 ARG BUILD_ARCH
 
-# install runtime prereq
+# Install runtime prerequisites
 RUN sed -i -e's/ main/ main contrib/g' /etc/apt/sources.list.d/debian.sources \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -26,6 +26,7 @@ RUN sed -i -e's/ main/ main contrib/g' /etc/apt/sources.list.d/debian.sources \
     libcairo-gobject2 \
     libcairo-script-interpreter2 \
     libcurl4 \
+    libexpat1 \
     libfl2 \
     libgc1 \
     libgirepository-1.0-1 \
@@ -55,12 +56,14 @@ RUN sed -i -e's/ main/ main contrib/g' /etc/apt/sources.list.d/debian.sources \
     libpcre2-32-0 \
     libpcre2-posix3 \
     libradcli4 \
+    librrd8 \
     libsensors-config \
     libsensors5 \
     libsm6 \
     libsnmp-base \
     libsnmp40 \
     libsqlite3-0 \
+    libssl3 \
     libxft2 \
     libzmq5 \
     && apt-get clean \
@@ -83,14 +86,13 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 WORKDIR /tmp
 
-# Install prerequisities
-# hadolint ignore=DL3008
+# Install build prerequisites
 RUN sed -i -e's/ main/ main contrib/g' /etc/apt/sources.list.d/debian.sources \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
     vim \
     git \
-    curl \
+    jq \
     build-essential \
     bison \
     flex \
@@ -119,27 +121,18 @@ RUN sed -i -e's/ main/ main contrib/g' /etc/apt/sources.list.d/debian.sources \
     libreadline-dev \
     libjson-c-dev \
     libldap2-dev \
-    libsnmp-dev \
     libexpat1-dev \
     libsnmp-dev \
     libradcli-dev \
-    libjson-c-dev \
     libzmq3-dev \
+    libnl-genl-3-dev \
+    libgcrypt20-dev \
     zlib1g-dev 
 
 # download source code
-RUN curl -sSLf -o /tmp/netflow2ng.tgz \
-    "https://github.com/synfinatic/netflow2ng/archive/refs/tags/v${NETFLOW2NG_VERSION}.tar.gz" \
-    && tar -xzvf netflow2ng.tgz \
-    && mv netflow2ng-* netflow2ng
-RUN curl -sSLf -o /tmp/ndpi.tgz \
-    "https://github.com/ntop/nDPI/archive/refs/tags/${NDPI_VERSION}.tar.gz" \
-    && tar -xzvf ndpi.tgz \
-    && mv nDPI-* nDPI 
-RUN curl -sSLf -o /tmp/ntopng.tgz \
-    "https://github.com/ntop/ntopng/archive/refs/tags/${NTOP_VERSION}.tar.gz" \
-    && tar -xzvf ntopng.tgz \
-    && mv ntopng-* ntopng
+RUN git clone --depth 1 --branch ${NDPI_VERSION}-stable https://github.com/ntop/nDPI.git nDPI
+RUN git clone --depth 1 --branch ${NTOP_VERSION}-stable https://github.com/ntop/ntopng.git ntopng
+RUN git clone --depth 1 --branch v${NETFLOW2NG_VERSION} https://github.com/synfinatic/netflow2ng.git netflow2ng
 
 # Build all software
 RUN cd netflow2ng \
