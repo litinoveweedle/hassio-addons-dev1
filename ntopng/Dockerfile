@@ -1,12 +1,18 @@
+# https://developers.home-assistant.io/docs/add-ons/configuration#add-on-dockerfile
 ARG BUILD_FROM
 ARG BUILD_ARCH
+ARG BUILD_DATE
+ARG BUILD_DESCRIPTION
+ARG BUILD_NAME
+ARG BUILD_REF
+ARG BUILD_REPOSITORY
+ARG BUILD_VERSION
+
 ARG NDPI_VERSION
 ARG NTOP_VERSION
 ARG NETFLOW2NG_VERSION
 
 FROM ${BUILD_FROM} AS stage1
-
-ARG BUILD_ARCH
 
 # Install runtime prerequisites
 RUN sed -i -e's/ main/ main contrib/g' /etc/apt/sources.list.d/debian.sources \
