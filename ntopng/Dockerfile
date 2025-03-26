@@ -1,60 +1,17 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base/amd64:7.8.0
-FROM ${BUILD_FROM}
-
-# Set shell
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-# Setup base system
 ARG BUILD_ARCH
-ARG NDPI_VERSION="4.8-stable"
-ARG NTOP_VERSION="5.6-stable"
-ARG NETFLOW2NG_VERSION="v0.0.4"
+ARG NDPI_VERSION="4.6"
+ARG NTOP_VERSION="5.6"
+ARG NETFLOW2NG_VERSION="0.0.4"
 
-COPY Makefile /tmp
+FROM ${BUILD_FROM} AS stage1
 
-WORKDIR /tmp
+ARG BUILD_ARCH
 
-# Install prerequisities
+# install runtime prereq
 RUN sed -i -e's/ main/ main contrib/g' /etc/apt/sources.list.d/debian.sources \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-    vim \
-    build-essential \
-    git \
-    bison \
-    flex \
-    libtool \
-    libtool-bin \
-    autoconf \
-    pkg-config \
-    automake \
-    autogen \
-    rename \
-    golang \
-    librrd-dev \
-    libxml2-dev \
-    libpcap-dev \
-    libsqlite3-dev \
-    libhiredis-dev \
-    libmariadb-dev \
-    libmaxminddb-dev \
-    libcurl4-openssl-dev \
-    libpango1.0-dev \
-    libcairo2-dev \
-    libnetfilter-queue-dev \
-    libssl-dev \
-    libcap-dev \
-    libnetfilter-conntrack-dev \
-    libreadline-dev \
-    libjson-c-dev \
-    libldap2-dev \
-    libsnmp-dev \
-    libexpat1-dev \
-    libsnmp-dev \
-    libradcli-dev \
-    libjson-c-dev \
-    libzmq3-dev \
-    zlib1g-dev \
     redis-server \
     geoipupdate \
     wget \
@@ -106,19 +63,35 @@ RUN sed -i -e's/ main/ main contrib/g' /etc/apt/sources.list.d/debian.sources \
     libsqlite3-0 \
     libxft2 \
     libzmq5 \
-# Build and install all software
-    && git clone --depth 1 --branch ${NDPI_VERSION} https://github.com/ntop/nDPI.git nDPI \
-    && git clone --depth 1 --branch ${NTOP_VERSION} https://github.com/ntop/ntopng.git ntopng \
-    && git clone --depth 1 --branch ${NETFLOW2NG_VERSION} https://github.com/synfinatic/netflow2ng.git netflow2ng \
-    && make -B -j8 \
-    && cp ./netflow2ng/dist/netflow2ng-* /usr/local/bin/netflow2ng \
-    && chmod +x /usr/local/bin/netflow2ng \
-    && useradd -r -m -d /var/run/netflow -s /bin/false netflow \
-    && useradd -r -m -d /var/run/ntop -s /bin/false ntopng \
-# Cleanup
-    && apt-get remove -y --purge \
-    build-essential \
+    && apt-get clean \
+    && rm -Rf \
+    /tmp/* \
+    /etc/nginx \
+    /etc/GeoIP.conf \
+    /var/{cache,log}/* \
+    /var/lib/apt/lists/*
+
+FROM stage1 AS stage2
+
+ARG BUILD_ARCH
+ARG NDPI_VERSION
+ARG NTOP_VERSION
+ARG NETFLOW2NG_VERSION
+
+# Set shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+WORKDIR /tmp
+
+# Install prerequisities
+# hadolint ignore=DL3008
+RUN sed -i -e's/ main/ main contrib/g' /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+    vim \
     git \
+    curl \
+    build-essential \
     bison \
     flex \
     libtool \
@@ -128,11 +101,13 @@ RUN sed -i -e's/ main/ main contrib/g' /etc/apt/sources.list.d/debian.sources \
     automake \
     autogen \
     rename \
+    golang \
     librrd-dev \
     libxml2-dev \
     libpcap-dev \
     libsqlite3-dev \
     libhiredis-dev \
+    libmariadb-dev \
     libmaxminddb-dev \
     libcurl4-openssl-dev \
     libpango1.0-dev \
@@ -150,18 +125,41 @@ RUN sed -i -e's/ main/ main contrib/g' /etc/apt/sources.list.d/debian.sources \
     libradcli-dev \
     libjson-c-dev \
     libzmq3-dev \
-    zlib1g-dev \
-    && apt-get autoremove -y --purge \
-    && rm -fr \
-        /tmp/* \
-        /etc/nginx \
-        /etc/GeoIP.conf \
-        /var/{cache,log}/* \
-        /var/lib/apt/lists/*
+    zlib1g-dev 
 
-# Copy root filesystem
-COPY rootfs /
-RUN chmod 775 /etc
+# download source code
+RUN curl -sSLf -o /tmp/netflow2ng.tgz \
+    "https://github.com/synfinatic/netflow2ng/archive/refs/tags/v${NETFLOW2NG_VERSION}.tar.gz" \
+    && tar -xzvf netflow2ng.tgz \
+    && mv netflow2ng-* netflow2ng
+RUN curl -sSLf -o /tmp/ndpi.tgz \
+    "https://github.com/ntop/nDPI/archive/refs/tags/${NDPI_VERSION}.tar.gz" \
+    && tar -xzvf ndpi.tgz \
+    && mv nDPI-* nDPI 
+RUN curl -sSLf -o /tmp/ntopng.tgz \
+    "https://github.com/ntop/ntopng/archive/refs/tags/${NTOP_VERSION}.tar.gz" \
+    && tar -xzvf ntopng.tgz \
+    && mv ntopng-* ntopng
+
+# Build all software
+RUN cd netflow2ng \
+    && make \
+    && cp dist/netflow2ng-* /usr/local/bin/netflow2ng \
+    && chmod +x /usr/local/bin/netflow2ng
+
+RUN cd nDPI \
+    && ./autogen.sh --with-only-libndpi \
+    && ./configure \
+    && make
+
+RUN cd ntopng \
+    && ./autogen.sh \
+    && ./configure \
+    && make \
+    && make install
+
+
+FROM stage1
 
 # Build arguments
 ARG BUILD_ARCH
@@ -171,6 +169,17 @@ ARG BUILD_NAME
 ARG BUILD_REF
 ARG BUILD_REPOSITORY
 ARG BUILD_VERSION
+
+COPY --from=stage2 /usr/local/bin/netflow2ng /usr/local/bin/netflow2ng
+COPY --from=stage2 /usr/local/bin/ntopng /usr/local/bin/ntopng
+COPY --from=stage2 /usr/local/share/ntopng /usr/local/share/ntopng
+
+RUN useradd -r -m -d /var/run/netflow -s /bin/false netflow \
+    && useradd -r -m -d /var/run/ntop -s /bin/false ntopng
+
+# Copy root filesystem
+COPY rootfs /
+RUN chmod 775 /etc
 
 # Labels
 LABEL \
