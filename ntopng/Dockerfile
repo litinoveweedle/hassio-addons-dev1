@@ -82,7 +82,6 @@ RUN sed -i -e's/ main/ main contrib/g' /etc/apt/sources.list.d/debian.sources \
 
 FROM stage1 AS stage2
 
-ARG BUILD_ARCH
 ARG NDPI_VERSION
 ARG NTOP_VERSION
 ARG NETFLOW2NG_VERSION
