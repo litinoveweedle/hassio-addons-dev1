@@ -22,28 +22,28 @@ RUN \
         TAPTAP_ARCH="musl-i686"; \
     else \
         exit 1; \
-    fi && \
-    mkdir /usr/bin/taptap && \
-    chmod 755 /usr/bin/taptap && \
-    curl -sSLf -o /tmp/taptap.tgz \
-    "https://github.com/litinoveweedle/taptap/releases/download/v${TAPTAP_VERSION}/taptap-Linux-${TAPTAP_ARCH}.tar.gz"; \
-    tar -xzvf taptap.tgz && \
-    cp taptap /usr/bin/taptap/ && \
-    chmod 755 /usr/bin/taptap/taptap && \
-    rm -Rf /tmp/*
+    fi \
+    && mkdir /usr/bin/taptap \
+    && chmod 755 /usr/bin/taptap \
+    && curl -sSLf -o /tmp/taptap.tgz \
+    "https://github.com/litinoveweedle/taptap/releases/download/v${TAPTAP_VERSION}/taptap-Linux-${TAPTAP_ARCH}.tar.gz" \
+    && tar -xzvf taptap.tgz \
+    && cp taptap /usr/bin/taptap/ \
+    && chmod 755 /usr/bin/taptap/taptap \
+    && rm -Rf /tmp/*
 
 # Get taptap-mqtt bridge
 ARG TAPTAP_MQTT_VERSION
 RUN \
-    mkdir /etc/taptap && \
-    chmod 755 /etc/taptap && \
-    curl -sSLf -o /tmp/taptap-mqtt.tgz \
-    "https://github.com/litinoveweedle/taptap-mqtt/archive/refs/tags/v${TAPTAP_MQTT_VERSION}.tar.gz"; \
-    tar -xzvf taptap-mqtt.tgz && \
-    cp taptap-mqtt-*/taptap-mqtt.py /usr/bin/taptap/ && \
-    chmod 755 /usr/bin/taptap/taptap-mqtt.py && \
-    pip install -r taptap-mqtt-*/requirements.txt && \
-    rm -Rf /tmp/*
+    mkdir /etc/taptap \
+    && chmod 755 /etc/taptap \
+    && curl -sSLf -o /tmp/taptap-mqtt.tgz \
+    "https://github.com/litinoveweedle/taptap-mqtt/archive/refs/tags/v${TAPTAP_MQTT_VERSION}.tar.gz" \
+    && tar -xzvf taptap-mqtt.tgz \
+    && cp taptap-mqtt-*/taptap-mqtt.py /usr/bin/taptap/ \
+    && chmod 755 /usr/bin/taptap/taptap-mqtt.py \
+    && pip install -r taptap-mqtt-*/requirements.txt \
+    && rm -Rf /tmp/*
 
 # Add user for taptap daemon
 RUN addgroup -S taptap && adduser -S taptap -G taptap -h /run/taptap -H
