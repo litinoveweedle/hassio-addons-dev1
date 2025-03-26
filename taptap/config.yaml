@@ -51,4 +51,3 @@ schema:
   ha_entity_availability: bool
   ha_discovery_prefix: str
   ha_birth_topic: str
-  
