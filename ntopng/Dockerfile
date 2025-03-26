@@ -1,5 +1,4 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/debian-base/amd64:7.8.0
-# hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
 # Set shell
@@ -16,7 +15,6 @@ COPY Makefile /tmp
 WORKDIR /tmp
 
 # Install prerequisities
-# hadolint ignore=DL3008
 RUN sed -i -e's/ main/ main contrib/g' /etc/apt/sources.list.d/debian.sources \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
