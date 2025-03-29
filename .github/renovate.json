@@ -11,8 +11,8 @@
       "description": "Update _VERSION variables in build.yaml",
       "fileMatch": ["/.*/build.yaml$"],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s.+?(aarch64|amd64|armhf|armv7|i386):(?<currentValue>.+?)\"\\s",
-        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>.+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s.+?_VERSION: (?<currentValue>.+?)\\s"
+        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>[a-z-/]+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s.+?(aarch64|amd64|armhf|armv7|i386).+?(aarch64|amd64|armhf|armv7|i386):(?<currentValue>[0-9\\.]*)\"\\s?",
+        "# renovate: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))? packageName=(?<packageName>[a-z-/]+?)(?: versioning=(?<versioning>[a-z-]+?))?\\s.*_VERSION: (?<currentValue>[0-9\\.]*)\\s?"
       ]
     }
   ],
