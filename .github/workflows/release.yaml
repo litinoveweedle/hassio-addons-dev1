@@ -32,7 +32,7 @@ jobs:
         run: |
           declare -a changed_addons
           for addon in ${{ steps.addons.outputs.addons }}; do
-            if [[ "${{ inputs.addon }}" =~ $addon ]]; then
+            if [[ "${{ inputs.addon }}" =~ ^${addon}$ ]]; then
               changed_addons+=("\"${addon}\",");
             fi
           done
@@ -101,4 +101,4 @@ jobs:
             --image "${{ steps.check.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon
-        
+            
